@@ -1,0 +1,11 @@
+{
+  "name": "Spring CI/CD Demo",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Spring App",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  }
+}
