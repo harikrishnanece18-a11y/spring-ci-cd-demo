@@ -1,0 +1,54 @@
+name: Spring CI/CD Local Pipeline
+
+# Trigger workflow on push to main branch
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout the repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Java JDK
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3️⃣ Build project with Gradle
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # 4️⃣ Run tests
+      - name: Run tests
+        run: ./gradlew test
+
+      # 5️⃣ Build Docker image
+      - name: Build Docker image
+        run: docker build -t spring-demo:latest .
+
+      # 6️⃣ Set up Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # 7️⃣ Terraform init
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init
+
+      # 8️⃣ Terraform apply (deploy container)
+      - name: Terraform Apply
+        working-directory: infra
+        run: terraform apply -auto-approve
+
+      # 9️⃣ Optional verification: check app is running
+      - name: Verify app is running
+        run: |
+          sleep 5
+          curl -f http://localhost:8080 || exit 1
